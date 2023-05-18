@@ -78,12 +78,12 @@ public extension GenericKeychain where Key.RawValue == String {
 /// - See: https://developer.apple.com/library/ios/samplecode/GenericKeychain
 
 /*
-    Copyright (C) 2016 Apple Inc. All Rights Reserved.
-    See LICENSE.txt for this sample’s licensing information
+ Copyright (C) 2016 Apple Inc. All Rights Reserved.
+ See LICENSE.txt for this sample’s licensing information
 
-    Abstract:
-    A struct for accessing generic password keychain items.
-*/
+ Abstract:
+ A struct for accessing generic password keychain items.
+ */
 
 /// - Note: add `accessibility` for `kSecAttrAccessible` attribute (2021)
 
@@ -124,7 +124,7 @@ public struct KeychainPasswordItem {
 
     // MARK: Keychain access
 
-    public func readPassword() throws -> String  {
+    public func readPassword() throws -> String {
         // Build a query to find the item that matches the service, account and access group.
         var query = KeychainPasswordItem.keychainQuery(
             withService: service,
@@ -147,9 +147,9 @@ public struct KeychainPasswordItem {
         guard status == noErr else { throw KeychainError.unhandledError(status: status) }
 
         // Parse the password string from the query result.
-        guard let existingItem = queryResult as? [String : AnyObject],
-            let passwordData = existingItem[kSecValueData as String] as? Data,
-            let password = String(data: passwordData, encoding: String.Encoding.utf8)
+        guard let existingItem = queryResult as? [String: AnyObject],
+              let passwordData = existingItem[kSecValueData as String] as? Data,
+              let password = String(data: passwordData, encoding: String.Encoding.utf8)
         else {
             throw KeychainError.unexpectedPasswordData
         }
@@ -159,14 +159,16 @@ public struct KeychainPasswordItem {
 
     public func savePassword(_ password: String) throws {
         // Encode the password into an Data object.
-        let encodedPassword = password.data(using: String.Encoding.utf8)!
+        guard let encodedPassword = password.data(using: String.Encoding.utf8) else {
+            throw KeychainError.unhandledError(status: -1)
+        }
 
         do {
             // Check for an existing item in the keychain.
             try _ = readPassword()
 
             // Update the existing item with the new password.
-            var attributesToUpdate = [String : AnyObject]()
+            var attributesToUpdate = [String: AnyObject]()
             attributesToUpdate[kSecValueData as String] = encodedPassword as AnyObject?
 
             let query = KeychainPasswordItem.keychainQuery(
@@ -181,9 +183,9 @@ public struct KeychainPasswordItem {
             guard status == noErr else { throw KeychainError.unhandledError(status: status) }
         } catch KeychainError.noPassword {
             /*
-                No password was found in the keychain. Create a dictionary to save
-                as a new keychain item.
-            */
+                 No password was found in the keychain. Create a dictionary to save
+                 as a new keychain item.
+             */
             var newItem = KeychainPasswordItem.keychainQuery(
                 withService: service,
                 account: account,
@@ -202,12 +204,12 @@ public struct KeychainPasswordItem {
 
     public mutating func renameAccount(_ newAccountName: String) throws {
         // Try to update an existing item with the new account name.
-        var attributesToUpdate = [String : AnyObject]()
+        var attributesToUpdate = [String: AnyObject]()
         attributesToUpdate[kSecAttrAccount as String] = newAccountName as AnyObject?
 
         let query = KeychainPasswordItem.keychainQuery(
             withService: service,
-            account: self.account,
+            account: account,
             accessGroup: accessGroup,
             accessibility: accessibility
         )
@@ -218,7 +220,7 @@ public struct KeychainPasswordItem {
             throw KeychainError.unhandledError(status: status)
         }
 
-        self.account = newAccountName
+        account = newAccountName
     }
 
     public func deleteItem() throws {
@@ -265,7 +267,7 @@ public struct KeychainPasswordItem {
         guard status == noErr else { throw KeychainError.unhandledError(status: status) }
 
         // Cast the query result to an array of dictionaries.
-        guard let resultData = queryResult as? [[String : AnyObject]] else {
+        guard let resultData = queryResult as? [[String: AnyObject]] else {
             throw KeychainError.unexpectedItemData
         }
 
@@ -294,8 +296,8 @@ public struct KeychainPasswordItem {
         account: String? = nil,
         accessGroup: String? = nil,
         accessibility: String? = nil
-    ) -> [String : AnyObject] {
-        var query = [String : AnyObject]()
+    ) -> [String: AnyObject] {
+        var query = [String: AnyObject]()
         query[kSecClass as String] = kSecClassGenericPassword
         query[kSecAttrService as String] = service as AnyObject?
 

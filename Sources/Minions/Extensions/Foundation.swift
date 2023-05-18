@@ -4,7 +4,7 @@ import Foundation
 
 public extension Bundle {
     func decode<T: Decodable>(_ type: T.Type, from file: String) -> T {
-        guard let url = self.url(forResource: file, withExtension: nil) else {
+        guard let url = url(forResource: file, withExtension: nil) else {
             fatalError("Failed to locate \(file) in bundle.")
         }
 
@@ -92,6 +92,36 @@ public extension Data {
 
     var hexString: String {
         map { String(format: "%02hhx", $0) }.joined()
+    }
+}
+
+public extension Data {
+    enum SerializationError: Swift.Error {
+        case jsonSerializationFailed
+    }
+
+    init(jsonWith any: Any) throws {
+        self = try JSONSerialization.data(
+            withJSONObject: any, options: .prettyPrinted
+        )
+    }
+
+    func jsonDictionary() throws -> [String: Any] {
+        try serializeJSON()
+    }
+
+    func jsonArray() throws -> [Any] {
+        try serializeJSON()
+    }
+
+    private func serializeJSON<T>() throws -> T {
+        let jsonObject = try JSONSerialization.jsonObject(
+            with: self, options: .allowFragments
+        )
+        guard let parsed = jsonObject as? T else {
+            throw SerializationError.jsonSerializationFailed
+        }
+        return parsed
     }
 }
 
@@ -235,17 +265,17 @@ public extension String {
 
     var isValidPhoneNumber: Bool {
         /// - Note: starts with 0, maximum 10 digits
-        return validate(regex: "^(?=0)[0-9]{10}$")
+        validate(regex: "^(?=0)[0-9]{10}$")
     }
 
     var isValidYear: Bool {
         /// - Note: has 4 digits
-        return validate(regex: #"^\d{4}$"#)
+        validate(regex: #"^\d{4}$"#)
     }
 
     var isStrongPassword: Bool {
         /// - Note: lowercase, uppercase, digit, 8-50 chars
-        return validate(regex: "((?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,50})")
+        validate(regex: "((?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,50})")
     }
 
     private func validate(regex: String) -> Bool {
@@ -259,7 +289,7 @@ public extension String {
 /// Makes sure no other thread reenters the closure before the one running has not returned
 /// - See: https://stackoverflow.com/a/61458763/2165585
 @discardableResult
-public func synchronized<T>(_ lock: AnyObject, closure:() -> T) -> T {
+public func synchronized<T>(_ lock: AnyObject, closure: () -> T) -> T {
     objc_sync_enter(lock)
     defer { objc_sync_exit(lock) }
     return closure()
@@ -319,10 +349,12 @@ public final class ObjectAssociation<T: AnyObject> {
     /// - Parameter index: An object whose associated object is to be accessed.
     public subscript(index: AnyObject) -> T? {
         get {
+            // swiftlint:disable force_cast
             objc_getAssociatedObject(
                 index,
                 Unmanaged.passUnretained(self).toOpaque()
-                ) as! T?
+            ) as! T?
+            // swiftlint:enable force_cast
         }
         set {
             objc_setAssociatedObject(

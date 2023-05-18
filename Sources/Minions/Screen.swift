@@ -13,7 +13,7 @@ public struct Screen {
     public init(ui: UIScreen = .main, app: UIApplication = .shared) {
         self.ui = ui
         self.app = app
-        self.inchSize = Device().determineScreenSize(for: ui.nativeBounds)
+        inchSize = Device().determineScreenSize(for: ui.nativeBounds)
     }
 
     public var isZoomed: Bool {
@@ -112,7 +112,7 @@ private extension Device {
             /// - Note: Unknown
 
         default:
-            print("❌ unsupported screen size")
+            log("❌ unsupported screen size")
 
             switch kind {
             case .iPhone:

@@ -40,9 +40,11 @@ public struct LayoutFill<T: View>: View {
     let alignment: Alignment
     var content: T
 
-    public init(_ color: Color = .clear,
-                alignment: Alignment = .center,
-                @ViewBuilder content: () -> T) {
+    public init(
+        _ color: Color = .clear,
+        alignment: Alignment = .center,
+        @ViewBuilder content: () -> T
+    ) {
         self.color = color
         self.alignment = alignment
         self.content = content()
@@ -220,8 +222,8 @@ public extension View {
     func `if`<T: View, F: View>(
         _ condition: Bool,
         if ifModifier: (Self) -> T,
-        else elseModifier: (Self) -> F) -> some View
-    {
+        else elseModifier: (Self) -> F
+    ) -> some View {
         if condition {
             ifModifier(self)
         } else {
@@ -309,7 +311,7 @@ public struct AnimationCompletionObserverModifier<Value>: AnimatableModifier whe
 
     init(observedValue: Value, completion: @escaping () -> Void) {
         self.completion = completion
-        self.animatableData = observedValue
+        animatableData = observedValue
         targetValue = observedValue
     }
 
@@ -319,13 +321,13 @@ public struct AnimationCompletionObserverModifier<Value>: AnimatableModifier whe
 
         /// Dispatching is needed to take the next runloop for the completion callback.
         DispatchQueue.main.async {
-            self.completion()
+            completion()
         }
     }
 
     public func body(content: Content) -> some View {
         /// We're not really modifying the view so we can directly return the original input value.
-        return content
+        content
     }
 }
 
@@ -347,26 +349,27 @@ public extension View {
 /// - See: https://www.hackingwithswift.com/plus/swiftui-special-effects/shadows-and-glows
 public extension View {
     func glow(color: Color = .red, radius: CGFloat = 20) -> some View {
-        self
-            .shadow(color: color, radius: radius / 3)
+        shadow(color: color, radius: radius / 3)
             .shadow(color: color, radius: radius / 3)
             .shadow(color: color, radius: radius / 3)
     }
 
     func innerShadow<S: Shape>(
-        using shape: S, angle: Angle = .degrees(0),
-        color: Color = .black, width: CGFloat = 6, blur: CGFloat = 6
+        using shape: S,
+        angle: Angle = .degrees(0),
+        color: Color = .black,
+        width: CGFloat = 6,
+        blur: CGFloat = 6
     ) -> some View {
         let finalX = CGFloat(cos(angle.radians - .pi / 2))
         let finalY = CGFloat(sin(angle.radians - .pi / 2))
-        return self
-            .overlay(
-                shape
-                    .stroke(color, lineWidth: width)
-                    .offset(x: finalX * width * 0.6, y: finalY * width * 0.6)
-                    .blur(radius: blur)
-                    .mask(shape)
-            )
+        return overlay(
+            shape
+                .stroke(color, lineWidth: width)
+                .offset(x: finalX * width * 0.6, y: finalY * width * 0.6)
+                .blur(radius: blur)
+                .mask(shape)
+        )
     }
 }
 
@@ -416,9 +419,9 @@ public extension CGSizePreferenceKey {
 public extension View {
     func onSizeChanged<Key: CGSizePreferenceKey>(
         _ key: Key.Type,
-        perform action: @escaping (CGSize) -> Void) -> some View
-    {
-        self.background(GeometryReader { geo in
+        perform action: @escaping (CGSize) -> Void
+    ) -> some View {
+        background(GeometryReader { geo in
             Color.clear
                 .preference(key: Key.self, value: geo.size)
         })
@@ -441,9 +444,9 @@ public extension CGFloatPreferenceKey {
 public extension View {
     func changePreference<Key: CGFloatPreferenceKey>(
         _ key: Key.Type,
-        using closure: @escaping (GeometryProxy) -> CGFloat) -> some View
-    {
-        self.background(GeometryReader { geo in
+        using closure: @escaping (GeometryProxy) -> CGFloat
+    ) -> some View {
+        background(GeometryReader { geo in
             Color.clear
                 .preference(key: Key.self, value: closure(geo))
         })
@@ -536,8 +539,7 @@ public extension Text {
         _ scalableFont: ScalableFont = .system,
         padding: CGFloat = 0
     ) -> some View {
-        self
-            .font(resolveFont(for: scalableFont))
+        font(resolveFont(for: scalableFont))
             .padding(padding)
             .minimumScaleFactor(0.01)
             .lineLimit(1)
@@ -619,7 +621,7 @@ public struct ToggleAsync<T: View>: View {
         label: @escaping () -> T,
         onValueChanged: ((Bool) -> Void)? = nil
     ) {
-        self._isOn = isOn
+        _isOn = isOn
         self.label = label
         self.onValueChanged = onValueChanged
     }
@@ -828,8 +830,8 @@ public struct Polygon: Shape {
 
 #if os(iOS)
 
-import UIKit
 import Combine
+import UIKit
 
 // MARK: - SafeAreaView
 
@@ -864,7 +866,7 @@ struct SafeAreaViewModifier: ViewModifier {
 
 public extension View {
     func edgesRespectingSafeArea(_ edges: Edge.Set) -> some View {
-        self.modifier(SafeAreaViewModifier(edges: edges))
+        modifier(SafeAreaViewModifier(edges: edges))
     }
 }
 
@@ -917,8 +919,10 @@ public struct RoundedCorner: Shape {
     public var radius: CGFloat
     public var corners: UIRectCorner
 
-    public init(radius: CGFloat = .infinity,
-                corners: UIRectCorner = .allCorners) {
+    public init(
+        radius: CGFloat = .infinity,
+        corners: UIRectCorner = .allCorners
+    ) {
         self.radius = radius
         self.corners = corners
     }
@@ -955,10 +959,12 @@ public struct ShareSheet: UIViewControllerRepresentable {
     public let excludedActivityTypes: [UIActivity.ActivityType]?
     public let callback: Callback?
 
-    public init(activityItems: [Any],
-                applicationActivities: [UIActivity]? = nil,
-                excludedActivityTypes: [UIActivity.ActivityType]? = nil,
-                callback: Callback? = nil) {
+    public init(
+        activityItems: [Any],
+        applicationActivities: [UIActivity]? = nil,
+        excludedActivityTypes: [UIActivity.ActivityType]? = nil,
+        callback: Callback? = nil
+    ) {
         self.activityItems = activityItems
         self.applicationActivities = applicationActivities
         self.excludedActivityTypes = excludedActivityTypes
@@ -976,20 +982,6 @@ public struct ShareSheet: UIViewControllerRepresentable {
     }
 
     public func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
-}
-
-// MARK: - List+Helpers
-
-public extension List {
-    func hideSeparators() -> some View {
-        self
-            .onAppear {
-                UITableView.appearance().separatorStyle = .none
-            }
-            .onDisappear {
-                UITableView.appearance().separatorStyle = .singleLine
-            }
-    }
 }
 
 #endif

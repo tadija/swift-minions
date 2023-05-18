@@ -82,23 +82,23 @@ public struct Device: CustomStringConvertible {
     }
 
     private static func platform() -> Platform {
-#if os(macOS)
+        #if os(macOS)
         return .macOS
-#elseif os(watchOS)
+        #elseif os(watchOS)
         return .watchOS
-#elseif os(tvOS)
+        #elseif os(tvOS)
         return .tvOS
-#elseif os(iOS)
-#if targetEnvironment(macCatalyst)
+        #elseif os(iOS)
+        #if targetEnvironment(macCatalyst)
         return .macCatalyst
-#else
+        #else
         return .iOS
-#endif
-#elseif os(Linux)
+        #endif
+        #elseif os(Linux)
         return .linux
-#else
+        #else
         return .unknown
-#endif
+        #endif
     }
 
     private static func osVersion() -> String {
@@ -108,11 +108,11 @@ public struct Device: CustomStringConvertible {
     }
 
     private static func isSimulator() -> Bool {
-#if targetEnvironment(simulator)
+        #if targetEnvironment(simulator)
         return true
-#else
+        #else
         return false
-#endif
+        #endif
     }
 
 }

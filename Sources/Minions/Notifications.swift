@@ -46,7 +46,7 @@ open class Notifications {
         }
     }
 
-    private let settingsKey = "AEKit.Notifications.Settings"
+    private let settingsKey = "Notifications.Settings"
 
     private var defaults: UserDefaults {
         .standard
@@ -150,7 +150,7 @@ extension Notifications {
 
         public init(userInfo: [AnyHashable: Any]) {
             self.userInfo = userInfo
-            self.aps = APS(userInfo: userInfo)
+            aps = APS(userInfo: userInfo)
 
             updateContent()
         }
@@ -205,10 +205,10 @@ public extension Notifications.Payload {
             let url = Bundle.main.url(forResource: name, withExtension: "apns"),
             let data = try? Data(contentsOf: url, options: .mappedIfSafe),
             let json = try? JSONSerialization
-                .jsonObject(with: data, options: .mutableContainers),
+            .jsonObject(with: data, options: .mutableContainers),
             let userInfo = json as? [AnyHashable: Any]
-            else {
-                return nil
+        else {
+            return nil
         }
         self = Self(userInfo: userInfo)
     }

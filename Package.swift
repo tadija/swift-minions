@@ -1,9 +1,9 @@
-// swift-tools-version: 5.7
+// swift-tools-version: 5.8
 
 import PackageDescription
 
 let package = Package(
-    name: "AEKit",
+    name: "swift-minions",
 
     platforms: [
         .iOS(.v15),
@@ -13,22 +13,13 @@ let package = Package(
     ],
 
     products: [
-        .library(
-            name: "AEKit",
-            targets: ["AEKit"]
-        ),
+        .library(name: "Minions", targets: ["Minions"]),
     ],
 
     dependencies: [],
 
     targets: [
-        .target(
-            name: "AEKit",
-            dependencies: []
-        ),
-        .testTarget(
-            name: "AEKitTests",
-            dependencies: ["AEKit"]
-        ),
+        .target(name: "Minions", dependencies: []),
+        .testTarget(name: "MinionsTests", dependencies: ["Minions"]),
     ]
 )

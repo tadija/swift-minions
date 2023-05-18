@@ -43,11 +43,11 @@ public struct AppGroup: CustomStringConvertible {
     ) -> Self {
         let prefix = "group"
         let groupID: String
-#if os(macOS)
+        #if os(macOS)
         groupID = "\(teamID).\(prefix).\(bundleID)"
-#else
+        #else
         groupID = "\(prefix).\(bundleID)"
-#endif
+        #endif
         return Self(groupID: groupID)
     }
 

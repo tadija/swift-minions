@@ -1,7 +1,7 @@
 #if canImport(Combine)
 
-import Foundation
 import Combine
+import Foundation
 
 public extension Publisher {
     func sink() -> AnyCancellable {
@@ -42,14 +42,14 @@ public extension Publisher {
 
 public extension Publisher {
     func mapToVoid() -> AnyPublisher<Void, Self.Failure> {
-        self.map { _ in () }
+        map { _ in () }
             .eraseToAnyPublisher()
     }
 }
 
 public extension Publisher {
     func mapToResult() -> AnyPublisher<Result<Output, Failure>, Never> {
-        self.map(Result.success)
+        map(Result.success)
             .catch { Just(.failure($0)) }
             .eraseToAnyPublisher()
     }
@@ -112,7 +112,7 @@ public extension Publisher {
 public extension Publisher {
     func unwrap<T>(
         orThrow error: @escaping @autoclosure () -> Failure
-    ) -> Publishers.TryMap<Self, T> where Output == Optional<T> {
+    ) -> Publishers.TryMap<Self, T> where Output == T? {
         tryMap { output in
             switch output {
             case .some(let value):

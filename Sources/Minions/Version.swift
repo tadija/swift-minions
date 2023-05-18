@@ -29,7 +29,7 @@ public struct Version: CustomStringConvertible {
         self.current = current
         self.history = history
 
-        self.state = State(old: history.all.last, new: current)
+        state = State(old: history.all.last, new: current)
 
         if state != .equal {
             history.save(current)
@@ -99,8 +99,7 @@ public struct Version: CustomStringConvertible {
 
             guard
                 let savedData = defaults.object(forKey: key) as? Data,
-                let savedHistory = try? JSONDecoder()
-                    .decode([Semantic].self, from: savedData)
+                let savedHistory = try? JSONDecoder().decode([Semantic].self, from: savedData)
             else {
                 return .init([])
             }
@@ -116,7 +115,7 @@ public struct Version: CustomStringConvertible {
             }
         }
 
-        public private(set) static var key: String = "AEKit.Version.History"
+        public private(set) static var key: String = "Version.History"
         public private(set) static var defaults: UserDefaults = .standard
     }
 

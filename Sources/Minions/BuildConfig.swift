@@ -1,6 +1,6 @@
 import Foundation
 
-/// Provides environment information.
+/// Provides information about build configuration and custom config.
 ///
 /// To enable, define "Config" dictionary within "Info.plist" file.
 /// Add any custom items to this dictionary, for example:
@@ -11,48 +11,52 @@ import Foundation
 ///
 /// Example of a posssible usage:
 ///
-///     extension Env {
+///     extension BuildConfig {
 ///         var isDev: Bool {
-///             buildConfiguration.contains("Dev")
+///             current.contains("Dev")
 ///         }
 ///
 ///         var isLive: Bool {
-///             buildConfiguration.contains("Live")
-///         }
-///
-///         var buildConfiguration: String {
-///             configDictionary["buildConfiguration"] as? String ?? "n/a"
+///             current.contains("Live")
 ///         }
 ///     }
 ///
-public struct Env {
+public struct BuildConfig {
 
     public let info: InfoPlist
 
-    /// Environment information provider
+    /// Build config provider
     ///
     /// - Parameters:
     ///   - info: "Info.plist" (defaults to `.init(bundle: Bundle = .main)`)
-    ///   - configDictionaryKey: key for a custom config in "Info.plist" (defaults to "Config")
+    ///   - customConfigKey: key for a custom config in "Info.plist" (defaults to "Config")
     ///
     public init(
         info: InfoPlist = .init(),
-        configDictionaryKey: String = "Config"
+        customConfigKey: String = "Config",
+        buildConfigKey: String = "buildConfiguration"
     ) {
         self.info = info
-        self.configDictionaryKey = configDictionaryKey
+        self.customConfigKey = customConfigKey
+        self.buildConfigKey = buildConfigKey
     }
 
     /// Access to custom "Config" dictionary from "Info.plist"
-    public var configDictionary: [String: Any] {
-        info[configDictionaryKey] as? Dictionary<String, Any> ?? [:]
+    public var customConfig: [String: Any] {
+        info[customConfigKey] as? [String: Any] ?? [:]
     }
 
-    private let configDictionaryKey: String
+    /// Current build configuration read from `customConfig`
+    var current: String {
+        customConfig["buildConfiguration"] as? String ?? "n/a"
+    }
+
+    private let customConfigKey: String
+    private let buildConfigKey: String
 
 }
 
-extension Env: CustomStringConvertible {
+extension BuildConfig: CustomStringConvertible {
 
     /// Multi-line string with basic environment information
     public var description: String {
@@ -92,11 +96,6 @@ extension Env: CustomStringConvertible {
     /// A flag which determines if code is run in the context of Test Flight build
     public var isTestFlight: Bool {
         info.bundle.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
-    }
-
-    /// A flag which determines if code is run in the context of Xcode's "Live Preview"
-    public var isXcodePreview: Bool {
-        ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
     }
 
 }

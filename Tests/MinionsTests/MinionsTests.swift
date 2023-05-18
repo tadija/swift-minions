@@ -1,7 +1,7 @@
+@testable import Minions
 import XCTest
-@testable import AEKit
 
-final class AEKitTests: XCTestCase {
+final class MinionsTests: XCTestCase {
     func testExample() throws {
         XCTAssertTrue(true)
     }

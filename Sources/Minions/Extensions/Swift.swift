@@ -10,21 +10,19 @@ public extension Array {
 public extension Sequence where Iterator.Element: Hashable {
     func unique() -> [Iterator.Element] {
         var seen: [Iterator.Element: Bool] = [:]
-        return self.filter { seen.updateValue(true, forKey: $0) == nil }
+        return filter {
+            seen.updateValue(true, forKey: $0) == nil
+        }
     }
 }
 
-/// - See: https://stackoverflow.com/a/57836702/2165585
+/// - See: https://stackoverflow.com/a/46354989/2165585
 public extension Array where Element: Hashable {
     func removingDuplicates<T: Hashable>(byKey key: (Element) -> T) -> [Element] {
-        var result = [Element]()
         var seen = Set<T>()
-        for value in self {
-            if seen.insert(key(value)).inserted {
-                result.append(value)
-            }
+        return filter { value in
+            seen.insert(key(value)).inserted
         }
-        return result
     }
 }
 
@@ -41,16 +39,18 @@ public extension Array {
 public extension Array {
     mutating func sortAscending<T: Comparable>(by keyPath: KeyPath<Element, T?>) {
         sort(by: {
-            guard let path1 = $0[keyPath: keyPath], let path2 = $1[keyPath: keyPath]
-                else { return false }
+            guard let path1 = $0[keyPath: keyPath], let path2 = $1[keyPath: keyPath] else {
+                return false
+            }
             return path1 < path2
         })
     }
 
     mutating func sortDescending<T: Comparable>(by keyPath: KeyPath<Element, T?>) {
         sort(by: {
-            guard let path1 = $0[keyPath: keyPath], let path2 = $1[keyPath: keyPath]
-                else { return false }
+            guard let path1 = $0[keyPath: keyPath], let path2 = $1[keyPath: keyPath] else {
+                return false
+            }
             return path1 > path2
         })
     }
@@ -59,16 +59,18 @@ public extension Array {
 public extension Array {
     func sortedAscending<T: Comparable>(by keyPath: KeyPath<Element, T?>) -> [Element] {
         sorted(by: {
-            guard let path1 = $0[keyPath: keyPath], let path2 = $1[keyPath: keyPath]
-                else { return false }
+            guard let path1 = $0[keyPath: keyPath], let path2 = $1[keyPath: keyPath] else {
+                return false
+            }
             return path1 < path2
         })
     }
 
     func sortedDescending<T: Comparable>(by keyPath: KeyPath<Element, T?>) -> [Element] {
         sorted(by: {
-            guard let path1 = $0[keyPath: keyPath], let path2 = $1[keyPath: keyPath]
-                else { return false }
+            guard let path1 = $0[keyPath: keyPath], let path2 = $1[keyPath: keyPath] else {
+                return false
+            }
             return path1 > path2
         })
     }
@@ -82,11 +84,11 @@ extension String: Error {}
 /// - See: https://www.hackingwithswift.com/example-code/strings/how-to-capitalize-the-first-letter-of-a-string
 public extension String {
     func capitalizingFirstLetter() -> String {
-        return prefix(1).capitalized + dropFirst()
+        prefix(1).capitalized + dropFirst()
     }
 
     mutating func capitalizeFirstLetter() {
-        self = self.capitalizingFirstLetter()
+        self = capitalizingFirstLetter()
     }
 }
 
@@ -197,6 +199,7 @@ public extension FloatingPoint {
 }
 
 /// - See: https://stackoverflow.com/a/55122446/2165585
+// swiftlint:disable force_unwrapping
 public extension CaseIterable where Self: Equatable, AllCases: BidirectionalCollection {
     func previous() -> Self {
         let all = Self.allCases
@@ -212,3 +215,4 @@ public extension CaseIterable where Self: Equatable, AllCases: BidirectionalColl
         return all[next == all.endIndex ? all.startIndex : next]
     }
 }
+// swiftlint:enable force_unwrapping

@@ -46,8 +46,8 @@ public extension NSFetchRequestResult where Self: NSManagedObject {
         guard
             let object = all(orderedBy: [sortDescriptor], limit: 1, in: context).first,
             let max = object.value(forKey: attribute) as? Int
-            else {
-                return 0
+        else {
+            return 0
         }
         return max + 1
     }
@@ -72,7 +72,7 @@ public extension NSFetchRequestResult where Self: NSManagedObject {
 
     static func unmanaged() -> Self {
         self.init(
-            entity: self.entity(),
+            entity: entity(),
             insertInto: nil
         )
     }
@@ -81,8 +81,8 @@ public extension NSFetchRequestResult where Self: NSManagedObject {
         guard
             let context = context,
             let object = context.object(with: objectID) as? Self
-            else {
-                return nil
+        else {
+            return nil
         }
         return object
     }

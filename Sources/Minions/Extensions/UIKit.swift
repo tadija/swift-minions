@@ -211,8 +211,8 @@ public extension UIViewController {
 extension UIView {
     public static func loadFromNib() -> Self {
         guard let view = nib
-                .instantiate(withOwner: nil, options: nil)
-                .first as? Self
+            .instantiate(withOwner: nil, options: nil)
+            .first as? Self
         else {
             fatalError("Failed to load view from nib: \(nibName)")
         }
@@ -221,8 +221,8 @@ extension UIView {
 
     public func loadFromNib() {
         guard let view = Self.nib
-                .instantiate(withOwner: self, options: nil)
-                .first as? UIView
+            .instantiate(withOwner: self, options: nil)
+            .first as? UIView
         else {
             fatalError("Failed to load view from nib: \(Self.nibName)")
         }
@@ -275,8 +275,10 @@ extension UIViewController {
 public extension CALayer {
     @discardableResult
     func drawLine(
-        from start: CGPoint, to end: CGPoint,
-        color: UIColor = .white, width: CGFloat = 1,
+        from start: CGPoint,
+        to end: CGPoint,
+        color: UIColor = .white,
+        width: CGFloat = 1,
         pattern: [NSNumber]? = nil
     ) -> CAShapeLayer {
         let layer = CAShapeLayer()
@@ -295,8 +297,10 @@ public extension CALayer {
 
     @discardableResult
     func drawText(
-        _ text: String, in frame: CGRect,
-        font: UIFont, color: UIColor = .white
+        _ text: String,
+        in frame: CGRect,
+        font: UIFont,
+        color: UIColor = .white
     ) -> CATextLayer {
         let layer = CATextLayer()
         layer.frame = frame
@@ -322,7 +326,8 @@ public extension CALayer {
 
     @discardableResult
     func drawShape(
-        _ shape: Shape, in frame: CGRect,
+        _ shape: Shape,
+        in frame: CGRect,
         color: UIColor = .white
     ) -> CAShapeLayer {
         let layer = CAShapeLayer()
@@ -346,6 +351,7 @@ public extension CALayer {
 // MARK: - String Helpers
 
 /// - See: https://stackoverflow.com/a/30450559/2165585
+// swiftformat:disable redundantSelf
 public extension String {
     func height(withConstrainedWidth width: CGFloat, font: UIFont) -> CGFloat {
         let constraintRect = CGSize(width: width, height: .greatestFiniteMagnitude)
@@ -369,6 +375,7 @@ public extension String {
         return boundingBox.width
     }
 }
+// swiftformat:enable redundantSelf
 
 // MARK: - UIAccessibility Helpers
 
@@ -424,10 +431,10 @@ public extension UIImage {
         }
         let imageSourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
         let imageSource = CGImageSourceCreateWithData(data, imageSourceOptions)
-        guard imageSource != nil else {
+        guard let imageSource else {
             return nil
         }
-        return UIImage.downsampled(imageSource!, to: size, scale: scale)
+        return UIImage.downsampled(imageSource, to: size, scale: scale)
     }
 
     /// Downsampling large images for display at smaller size
@@ -438,17 +445,18 @@ public extension UIImage {
     ///   - scale: screen scale
     /// - Returns: Downsampled image
     static func downsample(
-        imageAt imageURL: URL, to size: CGSize,
+        imageAt imageURL: URL,
+        to size: CGSize,
         scale: CGFloat = UIScreen.main.scale
     ) -> UIImage? {
         let imageSourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
         let imageSource = CGImageSourceCreateWithURL(
             imageURL as CFURL, imageSourceOptions
         )
-        guard imageSource != nil else {
+        guard let imageSource else {
             return nil
         }
-        return downsampled(imageSource!, to: size, scale: scale)
+        return downsampled(imageSource, to: size, scale: scale)
     }
 
     // MARK: Helpers
@@ -468,19 +476,21 @@ public extension UIImage {
         let downsampledImage = CGImageSourceCreateThumbnailAtIndex(
             imageSource, 0, downsampleOptions
         )
-        guard downsampledImage != nil else {
+        guard let downsampledImage else {
             return nil
         }
-        return UIImage(cgImage: downsampledImage!)
+        return UIImage(cgImage: downsampledImage)
     }
 
 }
 
+// swiftlint:disable force_unwrapping
 public extension UIImage {
     func flipped(_ orientation: UIImage.Orientation) -> UIImage {
         UIImage(cgImage: cgImage!, scale: scale, orientation: orientation)
     }
 }
+// swiftlint:enable force_unwrapping
 
 /// - See: https://gist.github.com/ppamorim/cc79170422236d027b2b
 public extension UIImage {
@@ -579,7 +589,9 @@ public extension UIImage {
         let rect = CGRect(x: -width / 2, y: -height / 2, width: width, height: height)
 
         UIGraphicsBeginImageContextWithOptions(size, false, scale)
-        let context = UIGraphicsGetCurrentContext()!
+        guard let context = UIGraphicsGetCurrentContext() else {
+            return nil
+        }
         context.translateBy(x: width / 2, y: height / 2)
         context.rotate(by: angle)
         draw(in: rect)
@@ -593,7 +605,9 @@ public extension UIImage {
 /// - See: https://stackoverflow.com/a/36591030/2165585
 public extension UIImage {
     func tinted(_ color: UIColor) -> UIImage? {
-        let maskImage = cgImage!
+        guard let maskImage = cgImage else {
+            return nil
+        }
 
         let width = size.width
         let height = size.height
@@ -603,19 +617,24 @@ public extension UIImage {
         let bitmapInfo = CGBitmapInfo(
             rawValue: CGImageAlphaInfo.premultipliedLast.rawValue
         )
-        let context = CGContext(
-            data: nil, width: Int(width), height: Int(height),
-            bitsPerComponent: 8, bytesPerRow: 0,
-            space: colorSpace, bitmapInfo: bitmapInfo.rawValue
-        )!
+        guard let context = CGContext(
+            data: nil,
+            width: Int(width),
+            height: Int(height),
+            bitsPerComponent: 8,
+            bytesPerRow: 0,
+            space: colorSpace,
+            bitmapInfo: bitmapInfo.rawValue
+        ) else {
+            return nil
+        }
 
         context.clip(to: bounds, mask: maskImage)
         context.setFillColor(color.cgColor)
         context.fill(bounds)
 
-        guard let cgImage = context.makeImage()
-            else {
-                return nil
+        guard let cgImage = context.makeImage() else {
+            return nil
         }
         return UIImage(cgImage: cgImage)
     }
@@ -684,7 +703,7 @@ public extension UITapGestureRecognizer {
 public extension UIView {
     convenience init(_ color: UIColor?) {
         self.init()
-        self.backgroundColor = color
+        backgroundColor = color
     }
 }
 
@@ -737,19 +756,19 @@ public extension UIWindow {
     }
 
     static var isPortrait: Bool {
-#if os(tvOS)
+        #if os(tvOS)
         false
-#else
+        #else
         scene?.interfaceOrientation.isPortrait ?? true
-#endif
+        #endif
     }
 
     static var isLandscape: Bool {
-#if os(tvOS)
+        #if os(tvOS)
         true
-#else
+        #else
         scene?.interfaceOrientation.isLandscape ?? false
-#endif
+        #endif
     }
 
     static var isSplitOrSlideOver: Bool {
@@ -760,11 +779,11 @@ public extension UIWindow {
     }
 
     static var statusBarHeight: CGFloat {
-#if os(tvOS)
+        #if os(tvOS)
         0
-#else
+        #else
         scene?.statusBarManager?.statusBarFrame.height ?? 0
-#endif
+        #endif
     }
 
     static var navigationBarHeight: CGFloat {
@@ -793,11 +812,11 @@ public extension UIWindow {
     }
 
     private static var statusBarFrame: CGRect? {
-#if os(tvOS)
-        .zero
-#else
+        #if os(tvOS)
+            .zero
+        #else
         scene?.statusBarManager?.statusBarFrame
-#endif
+        #endif
     }
 
     private static var scene: UIWindowScene? {

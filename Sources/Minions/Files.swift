@@ -103,7 +103,8 @@ public extension Files {
     }
 
     func write<T: Encodable>(
-        _ object: T, to url: URL,
+        _ object: T,
+        to url: URL,
         using encoder: JSONEncoder = .init()
     ) -> AnyPublisher<Void, Error> {
         Just(object)

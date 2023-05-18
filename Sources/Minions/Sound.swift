@@ -25,21 +25,19 @@ public final class Sound {
     }
 
     public func play(fromPath path: String) {
-#if !targetEnvironment(simulator) && !os(watchOS)
+        #if !targetEnvironment(simulator) && !os(watchOS)
         var id: SystemSoundID = 0
         let url = URL(fileURLWithPath: path)
         AudioServicesCreateSystemSoundID(url as CFURL, &id)
         play(soundID: id)
-#endif
+        #endif
     }
 
     public func play(soundID: UInt32) {
-#if !targetEnvironment(simulator) && !os(watchOS)
-        AudioServicesAddSystemSoundCompletion(soundID, nil, nil, { id, _ in
-            AudioServicesDisposeSystemSoundID(id)
-        }, nil)
+        #if !targetEnvironment(simulator) && !os(watchOS)
+        AudioServicesAddSystemSoundCompletion(soundID, nil, nil, { id, _ in AudioServicesDisposeSystemSoundID(id) }, nil)
         AudioServicesPlaySystemSound(soundID)
-#endif
+        #endif
     }
 
     // MARK: AVFoundation
@@ -70,6 +68,8 @@ public final class Sound {
 
 }
 
+// swiftlint:disable line_length
+// swiftformat:disable wrap
 public enum SystemSound: String {
     case modern_camera_shutter_burst_begin = "/System/Library/Audio/UISounds/Modern/camera_shutter_burst_begin.caf"
     case modern_camera_shutter_burst_end = "/System/Library/Audio/UISounds/Modern/camera_shutter_burst_end.caf"
@@ -342,5 +342,7 @@ public enum SystemSound: String {
     case uisounds_warsaw = "/System/Library/Audio/UISounds/warsaw.caf"
     case uisounds_wheels_of_time = "/System/Library/Audio/UISounds/wheels_of_time.caf"
 }
+// swiftlint:enable line_length
+// swiftformat:enable wrap
 
 #endif

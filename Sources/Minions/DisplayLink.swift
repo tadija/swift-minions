@@ -164,8 +164,10 @@ open class DisplayLink {
             /// - Note: for sluggish devices this timer will make sure to force expiration
             backupTimer = Timer(
                 timeInterval: remaining,
-                target: self, selector: #selector(expire),
-                userInfo: nil, repeats: false
+                target: self,
+                selector: #selector(expire),
+                userInfo: nil,
+                repeats: false
             )
         }
     }
