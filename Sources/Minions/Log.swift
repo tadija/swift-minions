@@ -9,15 +9,13 @@ import os.log
 ///   - fileID: Calling file ID (defaults to `#fileID`).
 ///   - line: Calling line number (defaults to `#line`).
 ///   - function: Calling function (defaults to `#function`).
-public func log(
+public func logWrite(
     _ items: Any...,
     fileID: String = #fileID,
     line: Int = #line,
     function: String = #function
 ) {
-    guard Log.isEnabled else {
-        return
-    }
+    guard Log.isEnabled else { return }
     Log.write(fileID: fileID, line: line, function: function, items: items)
 }
 

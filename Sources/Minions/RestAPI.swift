@@ -35,7 +35,7 @@ import Foundation
 ///     response.asDictionary()
 ///
 public struct RestAPI: RestAPIClient {
-    public var baseURL: URL
+    public var api: APIFactory
     public var session: URLSession
 
     /// Initializes a new `RestAPI` instance.
@@ -46,15 +46,22 @@ public struct RestAPI: RestAPIClient {
         _ baseURL: URL = .root,
         session: URLSession = .shared
     ) {
-        self.baseURL = baseURL
+        api = APIFactory(baseURL: baseURL)
         self.session = session
+    }
+
+    public struct APIFactory: RestAPIFactory {
+        public var baseURL: URL
     }
 }
 
 // MARK: - Types
 
 /// Protocol defining methods for constructing, sending, and parsing API requests.
-public protocol RestAPIClient: RestAPIFactory {
+public protocol RestAPIClient {
+    associatedtype T: RestAPIFactory
+
+    var api: T { get }
     var session: URLSession { get }
 
     func fetch(_ urlRequest: URLRequest) async throws -> RestAPIResponse
@@ -73,7 +80,9 @@ public protocol RestAPIRequest {
     var path: String { get }
 
     var headers: [String: String]? { get }
-    var parameters: [String: Any]? { get }
+    var urlParameters: [String: Any]? { get }
+
+    var bodyParameters: [String: Any]? { get }
     var body: Data? { get }
 
     var cachePolicy: URLRequest.CachePolicy? { get }
@@ -93,6 +102,11 @@ public struct RestAPIResponse {
     }
 }
 
+public enum RestAPIError: Error {
+    case badResponse
+    case badStatus(code: Int)
+}
+
 // MARK: - Extensions
 
 public extension RestAPIClient {
@@ -108,14 +122,14 @@ public extension RestAPIClient {
         let (data, response) = try await session.data(for: urlRequest)
 
         guard let httpResponse = response as? HTTPURLResponse else {
-            throw "Bad response"
+            throw RestAPIError.badResponse
         }
 
         switch httpResponse.statusCode {
         case 200 ..< 300:
             return RestAPIResponse(request: urlRequest, response: httpResponse, data: data)
         default:
-            throw "Bad status: \(httpResponse.statusCode)"
+            throw RestAPIError.badStatus(code: httpResponse.statusCode)
         }
     }
 
@@ -124,14 +138,14 @@ public extension RestAPIClient {
         _ url: URL,
         method: URLRequest.Method = .get,
         headers: [String: String]? = nil,
-        parameters: [String: Any]? = nil,
+        urlParameters: [String: Any]? = nil,
         body: Data? = nil
     ) async throws -> RestAPIResponse {
-        let request = makeURLRequest(
+        let request = api.makeURLRequest(
             method: method,
             url: url,
             headers: headers,
-            parameters: parameters,
+            urlParameters: urlParameters,
             body: body
         )
         return try await fetch(request)
@@ -139,7 +153,7 @@ public extension RestAPIClient {
 
     /// Fetches a `RestAPIRequest` and returns a `RestAPIResponse`.
     func fetch(_ apiRequest: RestAPIRequest) async throws -> RestAPIResponse {
-        let request = makeURLRequest(apiRequest)
+        let request = api.makeURLRequest(apiRequest)
         return try await fetch(request)
     }
 
@@ -152,14 +166,14 @@ public extension RestAPIFactory {
         method: URLRequest.Method,
         url: URL,
         headers: [String: String]? = nil,
-        parameters: [String: Any]? = nil,
+        urlParameters: [String: Any]? = nil,
         body: Data? = nil
     ) -> URLRequest {
         URLRequest(
             method: method,
             url: baseURL == .root ? url : baseURL.appendingPathComponent(url.absoluteString),
             headers: headers,
-            urlParameters: parameters,
+            urlParameters: urlParameters,
             body: body
         )
     }
@@ -170,7 +184,7 @@ public extension RestAPIFactory {
             method: apiRequest.method,
             url: baseURL.appendingPathComponent(apiRequest.path),
             headers: apiRequest.headers,
-            urlParameters: apiRequest.parameters,
+            urlParameters: apiRequest.urlParameters,
             body: apiRequest.body
         )
         if let cachePolicy = apiRequest.cachePolicy {
@@ -181,30 +195,32 @@ public extension RestAPIFactory {
 
 }
 
+/// Default implementation for `RestAPIRequest`
 public extension RestAPIRequest {
 
-    /// Default implementation for the `headers` property.
     var headers: [String: String]? {
         nil
     }
 
-    /// Default implementation for the `parameters` property.
-    var parameters: [String: Any]? {
+    var urlParameters: [String: Any]? {
         nil
     }
 
-    /// Default implementation for the `body` property.
+    var bodyParameters: [String: Any]? {
+        nil
+    }
+
     var body: Data? {
         guard
-            let parameters = parameters,
-            let json = try? parameters.jsonEncode()
+            method != .get,
+            let bodyParameters,
+            let json = try? bodyParameters.jsonEncode()
         else {
             return nil
         }
         return json
     }
 
-    /// Default implementation for the `cachePolicy` property.
     var cachePolicy: URLRequest.CachePolicy? {
         nil
     }
@@ -255,7 +271,7 @@ public extension RestAPIResponse {
 
 // MARK: - Helpers
 
-extension URL: ExpressibleByStringLiteral {
+extension URL: ExpressibleByStringLiteral, Identifiable {
 
     /// Helper for constructing `URL` using `String` literals.
     public init(stringLiteral value: String) {
@@ -263,6 +279,11 @@ extension URL: ExpressibleByStringLiteral {
             preconditionFailure("Invalid URL string: \(value)")
         }
         self = url
+    }
+
+    /// Identifiable
+    public var id: URL {
+        self
     }
 
     /// Root `URL` constant.

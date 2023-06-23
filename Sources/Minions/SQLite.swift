@@ -43,25 +43,25 @@ public final class SQLite {
 
     private func openDatabase(atPath path: String) {
         guard sqlite3_open(path, &db) == SQLITE_OK else {
-            log("❌ Failed to open connection to database at: \(path)")
+            logWrite("❌ Failed to open connection to database at: \(path)")
             return
         }
-        log("ℹ️ Opened connection to database at: \(path)")
+        logWrite("ℹ️ Opened connection to database at: \(path)")
     }
 
     private func closeDatabase() {
         guard sqlite3_close(db) == SQLITE_OK else {
-            log("❌ Failed to close connection to database")
+            logWrite("❌ Failed to close connection to database")
             return
         }
         db = nil
-        log("ℹ️ Closed connection to database.")
+        logWrite("ℹ️ Closed connection to database.")
     }
 
     private func prepareStatement(sql: String) {
         guard sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK else {
             let errorMessage = String(cString: sqlite3_errmsg(db))
-            log("❌ Failed to prepare statement: \(errorMessage)")
+            logWrite("❌ Failed to prepare statement: \(errorMessage)")
             return
         }
     }
@@ -69,7 +69,7 @@ public final class SQLite {
     private func finalizeStatement() {
         guard sqlite3_finalize(statement) == SQLITE_OK else {
             let errorMessage = String(cString: sqlite3_errmsg(db))
-            log("❌ Failed to finalize statement: \(errorMessage)")
+            logWrite("❌ Failed to finalize statement: \(errorMessage)")
             return
         }
         statement = nil

@@ -1,13 +1,11 @@
-#if os(iOS)
-
 import SwiftUI
 
-/// Triggers haptic feedback.
+/// Triggers haptic feedback on iOS.
 ///
 /// Usage example:
 ///
 ///     let haptics = Haptics()
-///     haptics.trigger(.success)
+///     haptics.signal(.success)
 ///
 public struct Haptics {
 
@@ -19,7 +17,8 @@ public struct Haptics {
 
     public init() {}
 
-    public func trigger(_ signal: Signal) {
+    public func signal(_ signal: Signal) {
+        #if os(iOS)
         switch signal {
         case .success:
             let feedback = UINotificationFeedbackGenerator()
@@ -43,8 +42,7 @@ public struct Haptics {
             let feedback = UISelectionFeedbackGenerator()
             feedback.selectionChanged()
         }
+        #endif
     }
 
 }
-
-#endif

@@ -3,6 +3,8 @@
 import Combine
 import Foundation
 
+// MARK: - Helpers
+
 public extension Publisher {
     func sink() -> AnyCancellable {
         sink(

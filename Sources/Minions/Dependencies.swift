@@ -54,6 +54,9 @@ public protocol DependencyKey {
     /// Dependency instance used in Xcode Previews.
     static var previewValue: Value { get set }
 
+    /// Dependency instance used in Xcode Simulator.
+    static var simulatorValue: Value { get set }
+
     /// Dependency instance used when running tests.
     static var testValue: Value { get set }
 }
@@ -63,6 +66,11 @@ extension DependencyKey {
     public static var previewValue: Value {
         get { Self.liveValue }
         set { Self.previewValue = newValue }
+    }
+
+    public static var simulatorValue: Value {
+        get { Self.liveValue }
+        set { Self.simulatorValue = newValue }
     }
 
     public static var testValue: Value {
@@ -78,6 +86,8 @@ extension DependencyKey {
                 return Self.liveValue
             case .preview:
                 return Self.previewValue
+            case .simulator:
+                return Self.simulatorValue
             case .test:
                 return Self.testValue
             }
@@ -88,6 +98,8 @@ extension DependencyKey {
                 Self.liveValue = newValue
             case .preview:
                 Self.previewValue = newValue
+            case .simulator:
+                Self.simulatorValue = newValue
             case .test:
                 Self.testValue = newValue
             }
@@ -99,7 +111,7 @@ extension Dependencies {
 
     /// Environment context
     public enum Context: String {
-        case live, preview, test
+        case live, preview, test, simulator
     }
 
     /// Current context.
@@ -108,6 +120,8 @@ extension Dependencies {
             return .preview
         } else if ProcessInfo.isXcodeUnitTest || ProcessInfo.isXcodeUITest {
             return .test
+        } else if ProcessInfo.isXcodeSimulator {
+            return .simulator
         } else {
             return .live
         }
@@ -278,6 +292,11 @@ public extension ProcessInfo {
     /// A flag which determines if code is run in the context of Xcode's "Live Preview"
     static var isXcodePreview: Bool {
         processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+    }
+
+    /// A flag which determines if code is run in the context of Xcode's "Simulator"
+    static var isXcodeSimulator: Bool {
+        processInfo.environment["SIMULATOR_DEVICE_NAME"] != nil
     }
 
     /// A flag which determines if code is run in the context of Xcode's "Unit Tests"

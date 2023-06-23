@@ -112,7 +112,7 @@ private extension Device {
             /// - Note: Unknown
 
         default:
-            log("❌ unsupported screen size")
+            logWrite("❌ unsupported screen size")
 
             switch kind {
             case .iPhone:

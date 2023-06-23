@@ -1,10 +1,10 @@
 # Minions
 
-**This package contains various "minions" reusable across multiple projects.**
+**Meet "minions", single-file helpers written in Swift, reusable across multiple projects.**
 
-> - each "minion" is a single file focused on a certain concept or utility
-> - duty of every "minion" is to provide a simple & flexible way to solve a problem
-> - "minions" are best suited for quick prototyping, learning, or making small apps
+> - each minion is a single file focused on a certain concept or utility
+> - duty of every minion is to provide a simple & flexible way to solve a problem
+> - minions are best suited for quick prototyping, learning, or making small apps
 
 ## Intro
 
@@ -17,19 +17,13 @@ import Minions
 struct Env: CustomStringConvertible {
 
     /// Build configuration and custom config
-    var buildConfig: BuildConfig {
-        .init()
-    }
+    @Dependency(\.buildConfig) var buildConfig
 
     /// A collection of information about current device
-    var device: Device {
-        .init()
-    }
+    @Dependency(\.device) var device
 
     /// A mechanism to track current app version state
-    var version: Version {
-        .init(buildConfig.bundleVersion)
-    }
+    @Dependency(\.version) var version
     
     /// String describing custom environment
     var description: String {
@@ -42,7 +36,7 @@ struct Env: CustomStringConvertible {
 
 }
 
-print(Env())
+logWrite(Env())
 ```
 
 which would output something like this:
@@ -67,7 +61,9 @@ history: [0.1.0]
 state: update(from: 0.1.0, to: 0.1.1)
 ```
 
-For more examples, check out other available [Minions](Sources/Minions) and [Extensions](Sources/Minions/Extensions).
+For more examples, check out other available [Minions](Sources/Minions).
+
+> Hint: in order to use minions (or any other types) with `@Dependency` property wrapper as shown above, you'll need to register them first, as explained in a [Dependencies](Sources/Minions/Dependencies.swift) minion. See also [swift-greenfield](https://github.com/tadija/swift-greenfield) project for more examples of various minions in use.
 
 ---
 

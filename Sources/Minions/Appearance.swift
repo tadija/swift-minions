@@ -143,17 +143,21 @@ extension Font {
     /// Usage example:
     ///
     ///     extension Font {
-    ///         static let light = Custom(file: "LightFont.otf", bundle: .module)
-    ///         static let bold = Custom(file: "BoldFont.otf", bundle: .module)
+    ///         static let light = Resource("LightFont.otf", bundle: .module)
+    ///         static let regular = Resource("RegularFont.otf", bundle: .module)
+    ///         static let bold = Resource("BoldFont.otf", bundle: .module)
     ///     }
     ///
     ///     Text("Dynamic Type")
     ///         .font(.light(21))
     ///
     ///     Text("Fixed Size")
-    ///         .font(.bold(8, fixed: true))
+    ///         .font(.regular(fixed: 8))
     ///
-    public struct Custom: CustomStringConvertible {
+    ///     Text("Relative Size")
+    ///         .font(.bold(16, relativeTo: .headline))
+    ///
+    public struct Resource: CustomStringConvertible {
 
         public let file: String
         public let bundle: Bundle
@@ -162,7 +166,7 @@ extension Font {
             fontName
         }
 
-        public init(file: String, bundle: Bundle) {
+        public init(_ file: String, bundle: Bundle) {
             self.file = file
             self.bundle = bundle
 
@@ -171,8 +175,16 @@ extension Font {
 
         // MARK: API
 
-        public func callAsFunction(_ size: CGFloat, fixed: Bool = false) -> Font {
-            fixed ? .custom(fontName, fixedSize: size) : .custom(fontName, size: size)
+        public func callAsFunction(_ size: CGFloat) -> Font {
+            .custom(fontName, size: size)
+        }
+
+        public func callAsFunction(fixed size: CGFloat) -> Font {
+            .custom(fontName, fixedSize: size)
+        }
+
+        public func callAsFunction(_ size: CGFloat, relativeTo textStyle: TextStyle) -> Font {
+            .custom(fontName, size: size, relativeTo: textStyle)
         }
 
         // MARK: Helpers
@@ -202,7 +214,7 @@ extension Font {
 
         private func register() {
             guard let fontURL = bundle.url(forResource: fontName, withExtension: fontExtension) else {
-                log("❌ missing font: \(file)")
+                logWrite("❌ missing font: \(file)")
                 return
             }
 
@@ -213,9 +225,9 @@ extension Font {
                 return
             } else {
                 if success {
-                    log("ℹ️ registered font: \(file)")
+                    logWrite("ℹ️ registered font: \(file)")
                 } else {
-                    log("⚠️ failed to register font: \(file)")
+                    logWrite("⚠️ failed to register font: \(file)")
                 }
             }
         }
