@@ -121,7 +121,7 @@ private extension Device {
                 return 10
             case .iPod:
                 return 4
-            case .watch, .mac, .tv, .unknown:
+            case .watch, .mac, .tv, .spatial, .unknown:
                 return 0
             }
         }

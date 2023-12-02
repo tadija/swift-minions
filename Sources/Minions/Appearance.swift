@@ -22,7 +22,7 @@ public enum Appearance: String, Identifiable, CaseIterable {
     }
 }
 
-#if os(iOS) || os(tvOS)
+#if os(iOS) || os(tvOS) || os(visionOS)
 
 import UIKit
 
@@ -30,11 +30,11 @@ public extension Appearance {
     var interfaceStyle: UIUserInterfaceStyle {
         switch self {
         case .dark:
-            return .dark
+            .dark
         case .light:
-            return .light
+            .light
         case .system:
-            return .unspecified
+            .unspecified
         }
     }
 
@@ -79,11 +79,11 @@ public extension Appearance {
     var colorScheme: ColorScheme? {
         switch self {
         case .dark:
-            return .dark
+            .dark
         case .light:
-            return .light
+            .light
         case .system:
-            return nil
+            nil
         }
     }
 }
@@ -118,7 +118,7 @@ extension Color {
                         NSColor(dark) : NSColor(light)
                 }
             )
-            #elseif os(iOS) || os(tvOS)
+            #elseif os(iOS) || os(tvOS) || os(visionOS)
             return Color(
                 UIColor {
                     $0.isDark ?

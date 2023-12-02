@@ -15,11 +15,11 @@ import Foundation
 public struct Device: CustomStringConvertible {
 
     public enum Kind: String {
-        case mac, iPhone, iPad, iPod, watch, tv, unknown
+        case mac, iPhone, iPad, iPod, watch, tv, spatial, unknown
     }
 
     public enum Platform: String {
-        case macOS, macCatalyst, iOS, watchOS, tvOS, linux, unknown
+        case iOS, macOS, tvOS, watchOS, visionOS, macCatalyst, linux, unknown
     }
 
     public let model: String = modelIdentifier()
@@ -76,24 +76,28 @@ public struct Device: CustomStringConvertible {
             default:
                 return .unknown
             }
+        case .visionOS:
+            return .spatial
         case .linux, .unknown:
             return .unknown
         }
     }
 
     private static func platform() -> Platform {
-        #if os(macOS)
-        return .macOS
-        #elseif os(watchOS)
-        return .watchOS
-        #elseif os(tvOS)
-        return .tvOS
-        #elseif os(iOS)
+        #if os(iOS)
         #if targetEnvironment(macCatalyst)
         return .macCatalyst
         #else
         return .iOS
         #endif
+        #elseif os(macOS)
+        return .macOS
+        #elseif os(tvOS)
+        return .tvOS
+        #elseif os(watchOS)
+        return .watchOS
+        #elseif os(visionOS)
+        return .visionOS
         #elseif os(Linux)
         return .linux
         #else

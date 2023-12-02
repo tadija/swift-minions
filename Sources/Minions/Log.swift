@@ -123,11 +123,11 @@ public final class Log {
 
     private static func getThreadName(_ thread: Thread) -> String {
         if thread.isMainThread {
-            return "main"
+            "main"
         } else if let name = thread.name, !name.isEmpty {
-            return name
+            name
         } else {
-            return String(format: "%p", thread)
+            String(format: "%p", thread)
         }
     }
 

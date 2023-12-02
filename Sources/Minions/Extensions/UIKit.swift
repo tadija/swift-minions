@@ -1,4 +1,4 @@
-#if os(iOS) || os(tvOS)
+#if os(iOS) || os(tvOS) || os(visionOS)
 
 import UIKit
 
@@ -22,7 +22,7 @@ public extension CALayer {
         layer.strokeColor = color.cgColor
         layer.fillColor = nil
         layer.lineDashPattern = pattern
-        layer.contentsScale = UIScreen.main.scale
+        layer.contentsScale = UITraitCollection.current.displayScale
         insertSublayer(layer, at: 0)
         return layer
     }
@@ -41,7 +41,7 @@ public extension CALayer {
         layer.foregroundColor = color.cgColor
         layer.alignmentMode = .center
         layer.string = text
-        layer.contentsScale = UIScreen.main.scale
+        layer.contentsScale = UITraitCollection.current.displayScale
         addSublayer(layer)
         return layer
     }
@@ -51,7 +51,7 @@ public extension CALayer {
         let layer = CALayer()
         layer.frame = frame
         layer.contents = image?.cgImage
-        layer.contentsScale = UIScreen.main.scale
+        layer.contentsScale = UITraitCollection.current.displayScale
         addSublayer(layer)
         return layer
     }
@@ -70,7 +70,7 @@ public extension CALayer {
             layer.path = UIBezierPath(ovalIn: frame).cgPath
         }
         layer.fillColor = color.cgColor
-        layer.contentsScale = UIScreen.main.scale
+        layer.contentsScale = UITraitCollection.current.displayScale
         addSublayer(layer)
         return layer
     }
@@ -140,7 +140,7 @@ public extension UIImage {
     /// - Returns: Downsampled image
     func downsampled(
         to size: CGSize,
-        scale: CGFloat = UIScreen.main.scale
+        scale: CGFloat = UITraitCollection.current.displayScale
     ) -> UIImage? {
         guard let data = pngData() as CFData? else {
             return nil
@@ -163,7 +163,7 @@ public extension UIImage {
     static func downsample(
         imageAt imageURL: URL,
         to size: CGSize,
-        scale: CGFloat = UIScreen.main.scale
+        scale: CGFloat = UITraitCollection.current.displayScale
     ) -> UIImage? {
         let imageSourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
         let imageSource = CGImageSourceCreateWithURL(
@@ -488,10 +488,14 @@ public extension UIWindow {
     }
 
     static var isSplitOrSlideOver: Bool {
+        #if os(visionOS)
+        false
+        #else
         guard let window = keyWindow else {
             return false
         }
         return !window.frame.equalTo(window.screen.bounds)
+        #endif
     }
 
     static var statusBarHeight: CGFloat {

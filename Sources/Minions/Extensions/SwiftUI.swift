@@ -6,7 +6,7 @@ import SwiftUI
 
 // swiftlint:disable syntactic_sugar
 /// - See: https://stackoverflow.com/a/61002589/2165585
-func ?? <T>(lhs: Binding<Optional<T>>, rhs: T) -> Binding<T> {
+public func ?? <T>(lhs: Binding<Optional<T>>, rhs: T) -> Binding<T> {
     Binding(
         get: { lhs.wrappedValue ?? rhs },
         set: { lhs.wrappedValue = $0 }
@@ -112,63 +112,6 @@ public extension View {
     }
 }
 
-// MARK: - View+AnimationCompletion
-
-/// - See: https://www.avanderlee.com/swiftui/withanimation-completion-callback
-/// An animatable modifier that is used for observing animations for a given animatable value.
-public struct AnimationCompletionObserverModifier<Value>: AnimatableModifier where Value: VectorArithmetic {
-
-    /// While animating, SwiftUI changes the old input value to the new target value using this property.
-    /// This value is set to the old value until the animation completes.
-    public var animatableData: Value {
-        didSet {
-            notifyCompletionIfFinished()
-        }
-    }
-
-    /// The target value for which we're observing. This value is directly set once the animation starts.
-    /// During animation, `animatableData` will hold the oldValue and is only updated to the target value
-    /// once the animation completes.
-    private var targetValue: Value
-
-    /// The completion callback which is called once the animation completes.
-    private var completion: () -> Void
-
-    init(observedValue: Value, completion: @escaping () -> Void) {
-        self.completion = completion
-        animatableData = observedValue
-        targetValue = observedValue
-    }
-
-    /// Verifies whether the current animation is finished and calls the completion callback if true.
-    private func notifyCompletionIfFinished() {
-        guard animatableData == targetValue else { return }
-
-        /// Dispatching is needed to take the next runloop for the completion callback.
-        DispatchQueue.main.async {
-            completion()
-        }
-    }
-
-    public func body(content: Content) -> some View {
-        /// We're not really modifying the view so we can directly return the original input value.
-        content
-    }
-}
-
-public extension View {
-    /// Calls the completion handler whenever an animation on the given value completes.
-    /// - Parameters:
-    ///   - value: The value to observe for animations.
-    ///   - completion: The completion callback to call once the animation completes.
-    /// - Returns: A modified `View` instance with the observer attached.
-    func onAnimationCompleted<Value: VectorArithmetic>(
-        for value: Value, completion: @escaping () -> Void
-    ) -> ModifiedContent<Self, AnimationCompletionObserverModifier<Value>> {
-        modifier(AnimationCompletionObserverModifier(observedValue: value, completion: completion))
-    }
-}
-
 // MARK: - View+Effects
 
 /// - See: https://www.hackingwithswift.com/plus/swiftui-special-effects/shadows-and-glows
@@ -227,6 +170,25 @@ public struct ScaleButtonStyle: ButtonStyle {
                 configuration.isPressed ? animationIn : animationOut,
                 value: configuration.isPressed
             )
+    }
+}
+
+// MARK: - LabelStyle
+
+public extension LabelStyle where Self == VerticalLabelStyle {
+    static func vertical(_ spacing: CGFloat = 8) -> Self {
+        .init(spacing: spacing)
+    }
+}
+
+public struct VerticalLabelStyle: LabelStyle {
+    var spacing: CGFloat
+
+    public func makeBody(configuration: Configuration) -> some View {
+        VStack(alignment: .center, spacing: spacing) {
+            configuration.icon
+            configuration.title
+        }
     }
 }
 
@@ -332,30 +294,6 @@ public extension Text {
     }
 }
 
-// MARK: - ObservableObject+Bind
-
-public extension ObservableObject {
-    func bind<T>(
-        _ keyPath: ReferenceWritableKeyPath<Self, T>,
-        animation: Animation? = .none
-    ) -> Binding<T> {
-        .init(
-            get: {
-                self[keyPath: keyPath]
-            },
-            set: { value in
-                if let animation = animation {
-                    withAnimation(animation) {
-                        self[keyPath: keyPath] = value
-                    }
-                } else {
-                    self[keyPath: keyPath] = value
-                }
-            }
-        )
-    }
-}
-
 // MARK: - Binding+Setter
 
 /// - See: https://gist.github.com/Amzd/c3015c7e938076fc1e39319403c62950
@@ -397,86 +335,8 @@ public extension Binding {
     }
 }
 
-// MARK: - iOS Specific
-
-#if os(iOS)
-
-import Combine
-import UIKit
-
-// MARK: - KeyboardAdaptive
-
-/// - See: https://gist.github.com/scottmatthewman/722987c9ad40f852e2b6a185f390f88d
-public struct KeyboardAdaptive: ViewModifier {
-    @State private var currentHeight: CGFloat = 0
-
-    public func body(content: Content) -> some View {
-        content
-            .padding(.bottom, currentHeight)
-            .edgesIgnoringSafeArea(currentHeight == 0 ? [] : .bottom)
-            .onAppear(perform: subscribeToKeyboardEvents)
-    }
-
-    private func subscribeToKeyboardEvents() {
-        NotificationCenter.Publisher(
-            center: NotificationCenter.default,
-            name: UIResponder.keyboardWillShowNotification
-        ).compactMap { notification in
-            notification.userInfo?["UIKeyboardFrameEndUserInfoKey"] as? CGRect
-        }.map { rect in
-            rect.height
-        }.subscribe(Subscribers.Assign(object: self, keyPath: \.currentHeight))
-
-        NotificationCenter.Publisher(
-            center: NotificationCenter.default,
-            name: UIResponder.keyboardWillHideNotification
-        ).compactMap { _ in
-            CGFloat.zero
-        }.subscribe(Subscribers.Assign(object: self, keyPath: \.currentHeight))
-    }
-}
-
-public extension View {
-    func keyboardAdaptive() -> some View {
-        modifier(KeyboardAdaptive())
-    }
-}
-
-// MARK: - CornerRadius
-
-/// - See: https://stackoverflow.com/a/58606176/2165585
-public struct RoundedCorner: Shape {
-    public var radius: CGFloat
-    public var corners: UIRectCorner
-
-    public init(
-        radius: CGFloat = .infinity,
-        corners: UIRectCorner = .allCorners
-    ) {
-        self.radius = radius
-        self.corners = corners
-    }
-
-    public func path(in rect: CGRect) -> Path {
-        let path = UIBezierPath(
-            roundedRect: rect,
-            byRoundingCorners: corners,
-            cornerRadii: CGSize(width: radius, height: radius)
-        )
-        return Path(path.cgPath)
-    }
-}
-
-public extension View {
-    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
-        clipShape(RoundedCorner(radius: radius, corners: corners))
-    }
-}
-
 public extension Edge.Set {
     static let none: Edge.Set = []
 }
-
-#endif
 
 #endif

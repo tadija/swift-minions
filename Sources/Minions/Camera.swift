@@ -12,7 +12,8 @@ import SwiftUI
 ///
 /// For usage example, see provided `Camera.CapturePreview` view.
 ///
-public final class Camera: ObservableObject {
+@Observable
+public final class Camera {
 
     /// Used to initialize `Camera` object.
     public enum Device {
@@ -22,16 +23,37 @@ public final class Camera: ObservableObject {
         case front
         /// custom device
         case custom(AVCaptureDevice?)
+
+        /// Capture device.
+        var captureDevice: AVCaptureDevice? {
+            switch self {
+            case .back:
+                return .default(
+                    .builtInWideAngleCamera,
+                    for: .video,
+                    position: .back
+                )
+            case .front:
+                return .default(
+                    .builtInWideAngleCamera,
+                    for: .video,
+                    position: .front
+                )
+            case .custom(let customDevice):
+                return customDevice
+            }
+        }
     }
 
     /// Latest image from capture preview stream.
-    @Published public var previewImage: Image?
+    public var previewImage: Image?
 
     /// Toggle this property to pause / unpause preview stream.
     /// When camera view is not on screen, preview should be paused.
     public var isPreviewPaused = false
 
     /// Async stream of capture device preview images.
+    @ObservationIgnored
     public private(set) lazy var previewStream: AsyncStream<CIImage> = {
         AsyncStream { continuation in
             session.addToPreviewStream = { ciImage in
@@ -43,6 +65,7 @@ public final class Camera: ObservableObject {
     }()
 
     /// Async stream of captured photos.
+    @ObservationIgnored
     public private(set) lazy var photoStream: AsyncStream<AVCapturePhoto> = {
         AsyncStream { continuation in
             session.addToPhotoStream = { photo in
@@ -96,11 +119,11 @@ extension Camera {
     /// Usage example:
     ///
     ///     struct CameraView: View {
-    ///         @StateObject var camera = Camera()
+    ///         @State var camera = Camera()
     ///
     ///         public var body: some View {
     ///             Camera.CapturePreview()
-    ///                 .environmentObject(camera)
+    ///                 .environment(camera)
     ///                 .overlay(alignment: .bottom) {
     ///                     Button("CAPTURE") {
     ///                         Task {
@@ -117,7 +140,7 @@ extension Camera {
     ///     }
     ///
     public struct CapturePreview: View {
-        @EnvironmentObject var camera: Camera
+        @Environment(Camera.self) var camera: Camera
 
         public init() {}
 
@@ -134,7 +157,7 @@ extension Camera {
                         .overlay { VisualEffectView() }
                 }
             }
-            .onChange(of: camera.previewImage) { newValue in
+            .onChange(of: camera.previewImage) { _, newValue in
                 if newValue != nil {
                     image = newValue
                 }
@@ -323,16 +346,7 @@ extension Camera {
         guard let cgImage = ciContext.createCGImage(ciImage, from: ciImage.extent) else {
             return nil
         }
-
-        var orientation: Image.Orientation = .up
-        #if os(macOS)
-        /// - Note: workaround the bug in `AVCaptureVideoDataOutputSampleBufferDelegate`
-        /// where `sampleBuffer.imageBuffer` is not mirrored (as it's supposed to be)
-        /// when both `isVideoMirroringSupported` and `isVideoMirrored` are `true`.
-        orientation = .upMirrored
-        #endif
-
-        return Image(decorative: cgImage, scale: 1, orientation: orientation)
+        return Image(decorative: cgImage, scale: 1, orientation: .up)
     }
 }
 
@@ -495,9 +509,9 @@ private extension CameraSession {
 
     func updatePhotoOutputConnection() {
         if let photoOutputConnection = photoOutput.connection(with: .video) {
-            if photoOutputConnection.isVideoOrientationSupported {
-                photoOutputConnection.videoOrientation = currentVideoOrientation
-            }
+            #if os(iOS)
+            photoOutputConnection.updateVideoRotationAngle(90)
+            #endif
         }
     }
 
@@ -506,14 +520,6 @@ private extension CameraSession {
         captureDevice?.position == .front
         #else
         true
-        #endif
-    }
-
-    var currentVideoOrientation: AVCaptureVideoOrientation {
-        #if os(iOS)
-        UIDevice.current.orientation.videoOrientation
-        #else
-        .portrait
         #endif
     }
 }
@@ -529,9 +535,10 @@ extension CameraSession: AVCaptureVideoDataOutputSampleBufferDelegate {
     ) {
         guard let pixelBuffer = sampleBuffer.imageBuffer else { return }
 
-        if connection.isVideoOrientationSupported {
-            connection.videoOrientation = currentVideoOrientation
-        }
+        #if os(iOS)
+        connection.updateVideoRotationAngle(90)
+        #endif
+
         if connection.isVideoMirroringSupported {
             connection.isVideoMirrored = shouldMirrorVideo
         }
@@ -563,17 +570,6 @@ extension CameraSession: AVCapturePhotoCaptureDelegate {
 
 // MARK: - Helpers
 
-public extension Camera.Device {
-    /// Helper for resolving `Camera.Device` to `AVCaptureDevice`.
-    var captureDevice: AVCaptureDevice? {
-        switch self {
-        case .back: return .default(.builtInWideAngleCamera, for: .video, position: .back)
-        case .front: return .default(.builtInWideAngleCamera, for: .video, position: .front)
-        case .custom(let customDevice): return customDevice
-        }
-    }
-}
-
 public extension AVCapturePhoto {
     /// Helper for getting `Image` from `AVCapturePhoto`
     func toImage() throws -> Image {
@@ -584,17 +580,12 @@ public extension AVCapturePhoto {
     }
 }
 
-#if os(iOS)
-fileprivate extension UIDeviceOrientation {
-    var videoOrientation: AVCaptureVideoOrientation {
-        switch self {
-        case .landscapeLeft: return .landscapeRight
-        case .landscapeRight: return .landscapeLeft
-        case .portraitUpsideDown: return .portraitUpsideDown
-        default: return .portrait
+extension AVCaptureConnection {
+    func updateVideoRotationAngle(_ angle: CGFloat) {
+        if videoRotationAngle != angle, isVideoRotationAngleSupported(angle) {
+            videoRotationAngle = angle
         }
     }
 }
-#endif
 
 #endif

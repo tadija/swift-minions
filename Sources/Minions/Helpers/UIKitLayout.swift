@@ -1,4 +1,4 @@
-#if os(iOS) || os(tvOS)
+#if os(iOS) || os(tvOS) || os(visionOS)
 
 import UIKit
 
@@ -205,6 +205,7 @@ public extension UIViewController {
     }
 }
 
+#if !os(visionOS)
 // MARK: - Nib & Storyboard Helpers
 
 /// - See: https://github.com/alisoftware/Reusable
@@ -269,5 +270,6 @@ extension UIViewController {
         nil
     }
 }
+#endif
 
 #endif

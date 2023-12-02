@@ -200,9 +200,9 @@ public extension Notifications.Payload {
         self.init(userInfo: notification.request.content.userInfo)
     }
 
-    init?(apnsFile name: String) {
+    init?(apnsFile name: String, bundle: Bundle = .main) {
         guard
-            let url = Bundle.main.url(forResource: name, withExtension: "apns"),
+            let url = bundle.url(forResource: name, withExtension: "apns"),
             let data = try? Data(contentsOf: url, options: .mappedIfSafe),
             let json = try? JSONSerialization
             .jsonObject(with: data, options: .mutableContainers),
@@ -218,9 +218,9 @@ public extension UNAuthorizationStatus {
     var isAuthorized: Bool {
         switch self {
         case .authorized, .provisional, .ephemeral:
-            return true
+            true
         default:
-            return false
+            false
         }
     }
 }

@@ -41,7 +41,7 @@ public struct Dependencies {}
 ///     }
 ///
 ///     // resolve custom dependency using a property wrapper
-///     final class CustomViewModel: ObservableObject {
+///     final class CustomViewModel {
 ///         @Dependency(\.custom) var custom
 ///     }
 ///
@@ -83,13 +83,13 @@ extension DependencyKey {
         get {
             switch Dependencies.context {
             case .live:
-                return Self.liveValue
+                Self.liveValue
             case .preview:
-                return Self.previewValue
+                Self.previewValue
             case .simulator:
-                return Self.simulatorValue
+                Self.simulatorValue
             case .test:
-                return Self.testValue
+                Self.testValue
             }
         }
         set {
@@ -117,13 +117,13 @@ extension Dependencies {
     /// Current context.
     public static var context: Context {
         if ProcessInfo.isXcodePreview {
-            return .preview
+            .preview
         } else if ProcessInfo.isXcodeUnitTest || ProcessInfo.isXcodeUITest {
-            return .test
+            .test
         } else if ProcessInfo.isXcodeSimulator {
-            return .simulator
+            .simulator
         } else {
-            return .live
+            .live
         }
     }
 

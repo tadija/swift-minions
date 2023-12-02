@@ -91,9 +91,9 @@ public protocol RestAPIRequest {
 /// Structure representing the result of an API request,
 /// containing the original request, HTTP response, and data.
 public struct RestAPIResponse {
-    var request: URLRequest
-    var response: HTTPURLResponse
-    var data: Data
+    public let request: URLRequest
+    public let response: HTTPURLResponse
+    public let data: Data
 
     public init(request: URLRequest, response: HTTPURLResponse, data: Data) {
         self.request = request
@@ -247,6 +247,10 @@ public extension RestAPIResponse {
     /// Full description of original request and response.
     var fullDescription: String {
         "\(request.fullDescription)\n\(response.fullDescription)"
+    }
+
+    func asString(using encoding: String.Encoding = .utf8) -> String {
+        String(data: data, encoding: encoding) ?? ""
     }
 
     /// Response data as JSON dictionary

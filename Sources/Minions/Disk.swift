@@ -4,6 +4,15 @@ import Foundation
 ///
 /// Usage example:
 ///
+///     // data
+///
+///     let disk = Disk()
+///     let url = ...
+///     let data = try await disk.read(from: url)
+///     try await disk.write(data, to: url)
+///
+///     // codable
+///
 ///     struct Example: Codable {
 ///         let id: Int
 ///         let title: String
@@ -19,21 +28,21 @@ import Foundation
 ///         // async
 ///
 ///         func load() async throws -> Example {
-///             try await disk.read(from: fileURL)
+///             try await disk.decode(from: fileURL)
 ///         }
 ///
 ///         func save(_ example: Example) async throws {
-///             try await disk.write(example, to: fileURL)
+///             try await disk.encode(example, to: fileURL)
 ///         }
 ///
 ///         // combine
 ///
 ///         func load() -> AnyPublisher<Example, Error> {
-///             disk.read(from: fileURL)
+///             disk.decode(from: fileURL)
 ///         }
 ///
 ///         func save(_ example: Example) -> AnyPublisher<Void, Error> {
-///             disk.write(example, to: fileURL)
+///             disk.encode(example, to: fileURL)
 ///         }
 ///     }
 ///
@@ -83,7 +92,7 @@ public extension Disk {
 }
 
 public extension Disk {
-    func read<T: Decodable>(
+    func decode<T: Decodable>(
         from url: URL,
         using decoder: JSONDecoder = .init()
     ) async throws -> T {
@@ -91,7 +100,7 @@ public extension Disk {
         return try decoder.decode(T.self, from: data)
     }
 
-    func write<T: Encodable>(
+    func encode<T: Encodable>(
         _ object: T,
         to url: URL,
         using encoder: JSONEncoder = .init()
@@ -190,7 +199,7 @@ public extension Disk {
 }
 
 public extension Disk {
-    func read<T: Decodable>(
+    func decode<T: Decodable>(
         from url: URL,
         using decoder: JSONDecoder = .init()
     ) -> AnyPublisher<T, Error> {
@@ -199,7 +208,7 @@ public extension Disk {
             .eraseToAnyPublisher()
     }
 
-    func write<T: Encodable>(
+    func encode<T: Encodable>(
         _ object: T,
         to url: URL,
         using encoder: JSONEncoder = .init()

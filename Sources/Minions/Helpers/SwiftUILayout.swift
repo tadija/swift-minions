@@ -85,11 +85,11 @@ public struct LayoutHalf<T: View>: View {
     }
 }
 
-public struct LayoutAlign<T: View>: View {
+public struct LayoutAlign<Content: View>: View {
     let alignment: Alignment
-    var content: T
+    var content: Content
 
-    public init(_ alignment: Alignment, @ViewBuilder content: () -> T) {
+    public init(_ alignment: Alignment, @ViewBuilder content: () -> Content) {
         self.alignment = alignment
         self.content = content()
     }

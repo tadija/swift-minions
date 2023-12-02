@@ -263,7 +263,7 @@ public struct StickyHeader<Content: View>: View {
 
 // MARK: - Stripes
 
-#if os(iOS) || os(tvOS)
+#if os(iOS) || os(tvOS) || os(visionOS)
 import CoreImage.CIFilterBuiltins
 
 /// - See: https://stackoverflow.com/a/63166881/2165585
