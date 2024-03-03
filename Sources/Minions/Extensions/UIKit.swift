@@ -462,9 +462,17 @@ public extension UIView {
 // MARK: - UIWindow+Helpers
 
 public extension UIWindow {
+    static var allScenes: [UIWindowScene] {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+    }
+
+    static var first: UIWindow? {
+        allScenes.first?.windows.first
+    }
+
     static var keyWindow: UIWindow? {
-        scene?.windows
-            .first(where: { $0.isKeyWindow })
+        activeScene?.keyWindow
     }
 
     static var safeArea: UIEdgeInsets {
@@ -475,7 +483,7 @@ public extension UIWindow {
         #if os(tvOS)
         false
         #else
-        scene?.interfaceOrientation.isPortrait ?? true
+        activeScene?.interfaceOrientation.isPortrait ?? true
         #endif
     }
 
@@ -483,7 +491,7 @@ public extension UIWindow {
         #if os(tvOS)
         true
         #else
-        scene?.interfaceOrientation.isLandscape ?? false
+        activeScene?.interfaceOrientation.isLandscape ?? false
         #endif
     }
 
@@ -491,10 +499,8 @@ public extension UIWindow {
         #if os(visionOS)
         false
         #else
-        guard let window = keyWindow else {
-            return false
-        }
-        return !window.frame.equalTo(window.screen.bounds)
+        guard let first else { return false }
+        return !first.frame.equalTo(first.screen.bounds)
         #endif
     }
 
@@ -502,7 +508,7 @@ public extension UIWindow {
         #if os(tvOS)
         0
         #else
-        scene?.statusBarManager?.statusBarFrame.height ?? 0
+        activeScene?.statusBarManager?.statusBarFrame.height ?? 0
         #endif
     }
 
@@ -535,14 +541,13 @@ public extension UIWindow {
         #if os(tvOS)
         .zero
         #else
-        scene?.statusBarManager?.statusBarFrame
+        activeScene?.statusBarManager?.statusBarFrame
         #endif
     }
 
-    private static var scene: UIWindowScene? {
-        UIApplication.shared.connectedScenes
+    private static var activeScene: UIWindowScene? {
+        allScenes
             .filter { $0.activationState == .foregroundActive }
-            .compactMap { $0 as? UIWindowScene }
             .first
     }
 }

@@ -62,8 +62,8 @@ public final class Sound {
         }
     }
 
-    public func cleanupSound(atPath path: String) {
-        players[path] = nil
+    public func cleanupCache() {
+        players.removeAll()
     }
 
 }

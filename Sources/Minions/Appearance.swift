@@ -88,8 +88,6 @@ public extension Appearance {
     }
 }
 
-#if !os(watchOS)
-
 // MARK: - Color.Adaptive
 
 extension Color {
@@ -125,14 +123,14 @@ extension Color {
                         UIColor(dark) : UIColor(light)
                 }
             )
+            #elseif os(watchOS)
+            return dark
             #endif
         }
 
     }
 
 }
-
-#endif
 
 // MARK: - Font.Custom
 

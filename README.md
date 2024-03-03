@@ -65,6 +65,12 @@ For more examples, check out other available [Minions](Sources/Minions).
 
 > Hint: in order to use minions (or any other types) with `@Dependency` property wrapper as shown above, you'll need to register them first, as explained in a [Dependencies](Sources/Minions/Dependencies.swift) minion. See also [swift-greenfield](https://github.com/tadija/swift-greenfield) project for more examples of the various minions in use.
 
+## SPM
+
+```swift
+.package(url: "git@github.com:tadija/swift-minions.git", branch: "main")
+```
+
 ---
 
 `#done-for-fun`
