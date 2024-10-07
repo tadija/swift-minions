@@ -275,7 +275,7 @@ public extension RestAPIResponse {
 
 // MARK: - Helpers
 
-extension URL: ExpressibleByStringLiteral, Identifiable {
+extension URL: @retroactive ExpressibleByStringLiteral, @retroactive Identifiable {
 
     /// Helper for constructing `URL` using `String` literals.
     public init(stringLiteral value: String) {

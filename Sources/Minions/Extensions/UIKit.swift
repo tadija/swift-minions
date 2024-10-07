@@ -467,8 +467,14 @@ public extension UIWindow {
             .compactMap { $0 as? UIWindowScene }
     }
 
-    static var first: UIWindow? {
+    static var firstWindow: UIWindow? {
         allScenes.first?.windows.first
+    }
+
+    static var activeScene: UIWindowScene? {
+        allScenes
+            .filter { $0.activationState == .foregroundActive }
+            .first
     }
 
     static var keyWindow: UIWindow? {
@@ -499,8 +505,8 @@ public extension UIWindow {
         #if os(visionOS)
         false
         #else
-        guard let first else { return false }
-        return !first.frame.equalTo(first.screen.bounds)
+        guard let firstWindow else { return false }
+        return !firstWindow.frame.equalTo(firstWindow.screen.bounds)
         #endif
     }
 
@@ -543,12 +549,6 @@ public extension UIWindow {
         #else
         activeScene?.statusBarManager?.statusBarFrame
         #endif
-    }
-
-    private static var activeScene: UIWindowScene? {
-        allScenes
-            .filter { $0.activationState == .foregroundActive }
-            .first
     }
 }
 

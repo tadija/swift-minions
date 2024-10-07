@@ -99,7 +99,7 @@ public final class Log {
     // MARK: Internal API
 
     static func write(
-        thread: Thread = .current,
+        thread: String = getThreadName(.current),
         fileID: String,
         line: Int,
         function: String,
@@ -107,7 +107,7 @@ public final class Log {
     ) {
         DispatchQueue.global(qos: .utility).async {
             let line = Line(
-                thread: getThreadName(thread),
+                thread: thread,
                 file: extractFilename(fileID),
                 number: line,
                 function: function,

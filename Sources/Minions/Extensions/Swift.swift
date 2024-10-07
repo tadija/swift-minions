@@ -79,7 +79,7 @@ public extension Array {
 // MARK: - String Helpers
 
 /// - See: https://twitter.com/jckarter/status/1230987212730167296
-extension String: Error {}
+extension String: @retroactive Error {}
 
 /// - See: https://www.hackingwithswift.com/example-code/strings/how-to-capitalize-the-first-letter-of-a-string
 public extension String {

@@ -139,8 +139,11 @@ private extension Device {
             /// 12, 12 Pro, 13, 13 Pro, 14
             return 6.06
         case 2556:
-            /// 14 Pro, 15, 15 Pro
+            /// 14 Pro, 15, 15 Pro, 16
             return 6.1
+        case 2622:
+            /// 16 Pro
+            return 6.3
         case 2688:
             /// Xs Max, 11 Pro Max
             return 6.5
@@ -148,8 +151,11 @@ private extension Device {
             /// 12 Pro Max, 13 Pro Max, 14 Plus
             return 6.7
         case 2796:
-            /// 14 Pro Max, 15+, 15 Pro Max
+            /// 14 Pro Max, 15+, 15 Pro Max, 16+
             return 6.7
+        case 2868:
+            /// 16 Pro Max
+            return 6.9
 
             /// - Note: iPads
 

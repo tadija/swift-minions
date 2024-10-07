@@ -64,6 +64,18 @@ public extension View {
             self
         }
     }
+
+    /// - See: https://stackoverflow.com/a/71203870/2165585
+    @ViewBuilder
+    func modify(@ViewBuilder _ transform: (Self) -> (some View)?) -> some View {
+        if let view = transform(self), !(view is EmptyView) {
+            view
+        }
+        else {
+            self
+        }
+    }
+
 }
 
 // MARK: - View+Debug
@@ -107,7 +119,7 @@ public extension View {
 
     func debugGesture<G: Gesture>(_ gesture: G) -> some View {
         debugModifier {
-            $0.gesture(gesture)
+            $0.simultaneousGesture(gesture)
         }
     }
 }
@@ -170,6 +182,32 @@ public struct ScaleButtonStyle: ButtonStyle {
                 configuration.isPressed ? animationIn : animationOut,
                 value: configuration.isPressed
             )
+    }
+}
+
+// MARK: - Custom transition
+
+extension AnyTransition {
+    static var verticalScale: AnyTransition {
+        .modifier(
+            active: VerticalScaleEffect(scale: 0),
+            identity: VerticalScaleEffect(scale: 1)
+        )
+    }
+}
+
+public struct VerticalScaleEffect: GeometryEffect {
+
+    public var scale: CGFloat
+
+    public var animatableData: CGFloat {
+        get { scale }
+        set { scale = newValue }
+    }
+
+    public func effectValue(size: CGSize) -> ProjectionTransform {
+        let scaleTransform: CGAffineTransform = .init(scaleX: 1, y: scale)
+        return ProjectionTransform(scaleTransform)
     }
 }
 

@@ -70,7 +70,7 @@ public struct Haptics {
 }
 
 #if os(watchOS)
-extension WKHapticType: CaseIterable {
+extension WKHapticType: @retroactive CaseIterable {
     public static var allCases: [WKHapticType] {[
         .notification,
         .directionUp,

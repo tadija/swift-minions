@@ -212,7 +212,7 @@ public extension Locale {
 
 // MARK: - String Helpers
 
-extension String: LocalizedError {
+extension String: @retroactive LocalizedError {
     public var errorDescription: String? {
         self
     }
