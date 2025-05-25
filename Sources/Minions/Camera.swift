@@ -1,5 +1,6 @@
 #if os(iOS) || os(macOS)
 
+@preconcurrency
 import AVFoundation
 import SwiftUI
 
@@ -13,7 +14,7 @@ import SwiftUI
 /// For usage example, see provided `Camera.CapturePreview` view.
 ///
 @Observable
-public final class Camera {
+public final class Camera: @unchecked Sendable {
 
     /// Used to initialize `Camera` object.
     public enum Device {
@@ -352,7 +353,7 @@ extension Camera {
 
 // MARK: - CameraSession
 
-private final class CameraSession: AVCaptureSession {
+private final class CameraSession: AVCaptureSession, @unchecked Sendable {
 
     var authStatus: AVAuthorizationStatus {
         AVCaptureDevice.authorizationStatus(for: .video)
@@ -447,7 +448,7 @@ private extension CameraSession {
 
     func stop() async {
         await withCheckedContinuation { continunation in
-            queue.async {
+            queue.async { [unowned self] in
                 self.stopRunning()
                 logWrite("capture session stopped")
                 continunation.resume()

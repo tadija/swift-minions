@@ -209,7 +209,6 @@ private extension UserDefaults {
         if let decoded = try? JSONDecoder().decode(T.self, from: data) {
             return decoded
         } else {
-            assertionFailure("decoding failed for key: \(key)")
             return nil
         }
     }
@@ -220,8 +219,6 @@ private extension UserDefaults {
         } else {
             if let encoded = try? JSONEncoder().encode(newValue) {
                 set(encoded, forKey: key)
-            } else {
-                assertionFailure("encoding failed for key: \(key)")
             }
         }
     }
